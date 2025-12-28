@@ -9,41 +9,71 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    /**
+     * Register user
+     */
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6'
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|min:6',
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password)
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
         ]);
 
+        // 🔐 Login & regenerate session
         Auth::login($user);
+        $request->session()->regenerate();
 
-        return response()->json(['status' => 'success']);
+        return response()->json([
+            'status'  => true,
+            'message' => 'Registered successfully'
+        ]);
     }
 
+    /**
+     * Login user
+     */
     public function login(Request $request)
     {
+        $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required',
+        ]);
+
         if (Auth::attempt($request->only('email', 'password'))) {
-            return response()->json(['status' => 'success']);
+
+            // 🔥 VERY IMPORTANT
+            $request->session()->regenerate();
+
+            return response()->json([
+                'status'  => true,
+                'message' => 'Login successful'
+            ]);
         }
 
-        return response()->json(['status' => 'error', 'message' => 'Invalid credentials'], 401);
+        return response()->json([
+            'status'  => false,
+            'message' => 'Invalid credentials'
+        ], 401);
     }
 
-   public function logout(Request $request)
-{
-    auth()->logout();
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
+    /**
+     * Logout user
+     */
+    public function logout(Request $request)
+    {
+        Auth::logout();
 
-    return redirect('/');
-}
+        // 🔥 Clear session completely
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
+        return redirect('/');
+    }
 }

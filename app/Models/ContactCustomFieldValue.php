@@ -28,8 +28,12 @@ class ContactCustomFieldValue extends Model
     /**
      * Custom field relation
      */
-    public function customField()
+   public function customField()
     {
-        return $this->belongsTo(CustomField::class);
+        return $this->belongsTo(CustomField::class)
+                    ->where('status', 'active')
+                    ->whereNull('deleted_at');
     }
+
+
 }

@@ -48,11 +48,17 @@ Route::middleware('auth')->group(function () {
      // Add this for contacts CRUD
    Route::get('/contacts/custom-fields/{id}', [ContactController::class, 'getCustomFields']);
 
-   Route::get('/contacts/custom-fields/{id}', function ($id) {
-        return \App\Models\ContactCustomFieldValue::with('customField')
-            ->where('contact_id', $id)
-            ->get();
-    });
+//    Route::get('/contacts/custom-fields/{id}', function ($id) {
+//         return \App\Models\ContactCustomFieldValue::with('customField')
+//             ->where('contact_id', $id)
+//             ->get();
+//     });
+
+    Route::get(
+        '/contacts/custom-fields/{id}',
+        [ContactController::class, 'getCustomFields']
+    )->name('contacts.custom.fields');
+
 
 
     Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
